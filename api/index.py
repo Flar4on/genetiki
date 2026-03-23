@@ -26,8 +26,8 @@ from jose import jwt
 SECRET_KEY = "vercel-demo-rns-yakutia-2026"
 ALGORITHM = "HS256"
 ADMIN_EMAIL = "admin@rns.local"
-ADMIN_PASSWORD = "admin123"
-OTP_CODE = "123456"
+ADMIN_PASSWORD = "123"
+PORTAL_PASSWORD = "123"
 
 
 def _find_base_dir() -> str:
@@ -364,6 +364,7 @@ app = FastAPI(title="РНС Якутия (Демо)")
 
 admin_tpl = Jinja2Templates(directory=os.path.join(BASE_DIR, "src", "admin", "templates"))
 portal_tpl = Jinja2Templates(directory=os.path.join(BASE_DIR, "src", "portal", "templates"))
+landing_tpl = Jinja2Templates(directory=os.path.join(BASE_DIR, "src"))
 
 static_dir = os.path.join(BASE_DIR, "src", "admin", "static")
 if os.path.isdir(static_dir):
@@ -388,20 +389,9 @@ def _render(tpl: Jinja2Templates, request: Request, name: str, ctx: Optional[dic
 # ── Debug ──
 
 
-@app.get("/debug")
-async def debug_info():
-    import starlette
-    return {
-        "base_dir": BASE_DIR,
-        "cwd": os.getcwd(),
-        "file": os.path.abspath(__file__),
-        "admin_tpl_exists": os.path.isdir(os.path.join(BASE_DIR, "src", "admin", "templates")),
-        "portal_tpl_exists": os.path.isdir(os.path.join(BASE_DIR, "src", "portal", "templates")),
-        "static_exists": os.path.isdir(static_dir),
-        "parents_count": len(DB["parents"]),
-        "fastapi_version": __import__("fastapi").__version__,
-        "starlette_version": starlette.__version__,
-    }
+@app.get("/", response_class=HTMLResponse)
+async def landing(request: Request):
+    return _render(landing_tpl, request, "landing.html")
 
 
 # ── Helpers ──
@@ -566,33 +556,20 @@ async def admin_analytics(request: Request):
 
 @app.get("/portal/login", response_class=HTMLResponse)
 async def portal_login_page(request: Request):
-    return _render(portal_tpl, request, "portal_login.html", {"step": "phone"})
+    return _render(portal_tpl, request, "portal_login.html")
 
 
-@app.post("/portal/login/send-code")
-async def portal_send_code(request: Request, phone: str = Form(...)):
+@app.post("/portal/login")
+async def portal_login_submit(request: Request, phone: str = Form(...), password: str = Form(...)):
     parent = _find_parent_by_phone(phone)
     if not parent:
         return _render(portal_tpl, request, "portal_login.html", {
-            "step": "phone",
-            "error": "Номер не найден. Сначала зарегистрируйтесь через Telegram-бот.",
+            "error": "Номер не найден.",
         })
 
-    return _render(portal_tpl, request, "portal_login.html", {"step": "code", "phone": phone})
-
-
-@app.post("/portal/login/verify")
-async def portal_verify_code(request: Request, phone: str = Form(...), code: str = Form(...)):
-    parent = _find_parent_by_phone(phone)
-    if not parent:
+    if password != PORTAL_PASSWORD:
         return _render(portal_tpl, request, "portal_login.html", {
-            "step": "phone", "error": "Номер не найден.",
-        })
-
-    if code.strip() != OTP_CODE:
-        return _render(portal_tpl, request, "portal_login.html", {
-            "step": "code", "phone": phone,
-            "error": "Неверный код. Используйте код 123456.",
+            "error": "Неверный пароль.",
         })
 
     token = create_access_token({"parent_id": str(parent.id), "type": "portal"})
@@ -685,9 +662,3 @@ async def portal_info(request: Request):
     })
 
 
-# ── Root redirect ──
-
-
-@app.get("/")
-async def root():
-    return RedirectResponse(url="/admin/login", status_code=302)
