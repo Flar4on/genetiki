@@ -28,7 +28,23 @@ ADMIN_EMAIL = "admin@rns.local"
 ADMIN_PASSWORD = "admin123"
 OTP_CODE = "123456"
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+def _find_base_dir() -> str:
+    """Find the project root by looking for src/admin/templates/."""
+    candidates = [
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),  # local: api/../
+        os.path.dirname(os.path.abspath(__file__)),                   # vercel: might flatten
+        os.getcwd(),                                                  # vercel: cwd is project root
+        "/var/task",                                                  # vercel python runtime
+        "/var/task/user",                                             # vercel alt
+    ]
+    for c in candidates:
+        if os.path.isdir(os.path.join(c, "src", "admin", "templates")):
+            return c
+    # Fallback
+    return candidates[0]
+
+
+BASE_DIR = _find_base_dir()
 
 
 # ── JWT helpers ──
@@ -356,6 +372,20 @@ portal_tpl = Jinja2Templates(directory=os.path.join(BASE_DIR, "src", "portal", "
 static_dir = os.path.join(BASE_DIR, "src", "admin", "static")
 if os.path.isdir(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+
+@app.get("/debug")
+async def debug_info():
+    """Diagnostic endpoint — remove after deployment works."""
+    return {
+        "base_dir": BASE_DIR,
+        "cwd": os.getcwd(),
+        "file": os.path.abspath(__file__),
+        "admin_tpl_exists": os.path.isdir(os.path.join(BASE_DIR, "src", "admin", "templates")),
+        "portal_tpl_exists": os.path.isdir(os.path.join(BASE_DIR, "src", "portal", "templates")),
+        "static_exists": os.path.isdir(static_dir),
+        "parents_count": len(DB["parents"]),
+    }
 
 
 # ── Helpers ──
