@@ -1,0 +1,81 @@
+{% extends "portal_base.html" %}
+{% set active_page = "children" %}
+
+{% block title %}Мои дети — РНС{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-person-hearts me-2 text-primary"></i>Мои дети</h2>
+
+{% if babies %}
+{% for baby in babies %}
+<div class="card mb-4 baby-card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <h4 class="mb-3">{{ baby.name or 'Без имени' }}</h4>
+                <p><i class="bi bi-calendar3 me-2"></i><strong>Дата рождения:</strong>
+                    {{ baby.birth_date.strftime('%d.%m.%Y') if baby.birth_date else '—' }}
+                </p>
+                <p><i class="bi bi-hospital me-2"></i><strong>Роддом:</strong>
+                    {{ baby.birth_hospital or '—' }}
+                </p>
+                <p><i class="bi bi-droplet me-2"></i><strong>Забор крови:</strong>
+                    {% if baby.sample_collected %}
+                    <span class="badge bg-success">Выполнен</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Не выполнен</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-8">
+                <h5 class="mb-3">Результаты скрининга</h5>
+                {% if baby.screening_results %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Результат</th>
+                                <th>Заболевание</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sr in baby.screening_results %}
+                            <tr>
+                                <td>{{ sr.received_at.strftime('%d.%m.%Y') if sr.received_at else '—' }}</td>
+                                <td>
+                                    {% if sr.result_type.value == 'positive' %}
+                                    <span class="status-positive"><i class="bi bi-exclamation-triangle me-1"></i>Положительный</span>
+                                    {% elif sr.result_type.value == 'negative' %}
+                                    <span class="status-negative"><i class="bi bi-check-circle me-1"></i>Отрицательный</span>
+                                    {% else %}
+                                    <span class="status-repeat"><i class="bi bi-arrow-repeat me-1"></i>Повторный забор</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ sr.disease_name or sr.disease_code or '—' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-light">
+                    <i class="bi bi-clock me-2"></i>
+                    Результаты скрининга ещё не получены. Мы уведомим вас, когда они будут готовы.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-person-plus fs-1 text-muted"></i>
+        <h5 class="mt-3 text-muted">Нет добавленных детей</h5>
+        <p class="text-muted">Добавьте ребёнка через Telegram-бот, чтобы отслеживать результаты скрининга.</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

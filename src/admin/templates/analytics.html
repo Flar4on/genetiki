@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% set active_page = "analytics" %}
+
+{% block title %}Аналитика - РНС Якутия{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Аналитика</h2>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Распределение по районам</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="regionChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Статистика по районам</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Район</th>
+                                <th>Родителей</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in region_stats %}
+                            <tr>
+                                <td>{{ stat.region }}</td>
+                                <td><span class="badge bg-primary">{{ stat.count }}</span></td>
+                            </tr>
+                            {% endfor %}
+                            {% if not region_stats %}
+                            <tr>
+                                <td colspan="2" class="text-center text-muted">Нет данных</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const regionData = {{ region_stats | tojson }};
+if (regionData.length > 0) {
+    new Chart(document.getElementById('regionChart'), {
+        type: 'bar',
+        data: {
+            labels: regionData.map(r => r.region),
+            datasets: [{
+                label: 'Родителей',
+                data: regionData.map(r => r.count),
+                backgroundColor: '#1a237e',
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

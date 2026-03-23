@@ -1,0 +1,106 @@
+{% extends "portal_base.html" %}
+{% set active_page = "info" %}
+
+{% block title %}О скрининге — РНС{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-info-circle me-2 text-primary"></i>О неонатальном скрининге</h2>
+
+<div class="accordion" id="faqAccordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                Что такое неонатальный скрининг?
+            </button>
+        </h2>
+        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+                <p>Неонатальный скрининг — это массовое обследование новорождённых для выявления наследственных заболеваний. С 2023 года в России проводится расширенный скрининг на <strong>36 заболеваний</strong>.</p>
+                <p>Анализ берётся у каждого новорождённого на 2-й день жизни (у недоношенных — на 7-й день). Это позволяет выявить заболевание до появления симптомов и начать лечение на ранней стадии.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                Зачем берут кровь из пятки?
+            </button>
+        </h2>
+        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+                <p>Из пятки новорождённого берут несколько капель крови на специальный тест-бланк (фильтровальную бумагу). Этот метод называется «сухое пятно крови».</p>
+                <p>Пятка выбрана потому что:</p>
+                <ul>
+                    <li>Это наименее болезненное место для забора</li>
+                    <li>Кровоток в пятке достаточный для анализа</li>
+                    <li>Процедура безопасна и занимает несколько минут</li>
+                </ul>
+                <p>Образец отправляется в медико-генетический центр для анализа методом тандемной масс-спектрометрии (ТМС).</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                Это безопасно?
+            </button>
+        </h2>
+        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+                <p><strong>Да, процедура абсолютно безопасна!</strong></p>
+                <ul>
+                    <li>Забирается всего несколько капель крови</li>
+                    <li>Используется одноразовый стерильный скарификатор</li>
+                    <li>Риск инфицирования исключён</li>
+                    <li>Процедура занимает 1-2 минуты</li>
+                    <li>Ребёнок испытывает минимальный дискомфорт</li>
+                </ul>
+                <p>Скрининг рекомендован Всемирной организацией здравоохранения и проводится во всех развитых странах.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                Что если результат положительный?
+            </button>
+        </h2>
+        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+                <div class="alert alert-warning">
+                    <strong>Положительный результат скрининга — это ещё НЕ диагноз!</strong>
+                </div>
+                <p>Это означает, что необходимо дополнительное обследование. В большинстве случаев повторный анализ показывает норму.</p>
+                <p>Если результат положительный:</p>
+                <ol>
+                    <li>Вам придёт уведомление через этот портал и Telegram-бот</li>
+                    <li>Свяжитесь с педиатром как можно скорее</li>
+                    <li>Врач назначит подтверждающие исследования</li>
+                    <li>При подтверждении — назначается лечение</li>
+                </ol>
+                <p>Раннее выявление и лечение позволяют предотвратить тяжёлые последствия заболевания.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                Контакты медико-генетического центра
+            </button>
+        </h2>
+        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body">
+                <p><strong>Медико-генетический центр РБ №1 — НЦМ</strong></p>
+                <p><i class="bi bi-geo-alt me-2"></i>г. Якутск, ул. Сергеляхское шоссе, 4</p>
+                <p><i class="bi bi-telephone me-2"></i>Телефон регистратуры: <a href="tel:+74112394516">+7 (4112) 39-45-16</a></p>
+                <p><i class="bi bi-telephone-fill me-2"></i>Горячая линия по РНС: <a href="tel:+74112394517">+7 (4112) 39-45-17</a></p>
+                <p><i class="bi bi-clock me-2"></i>Режим работы: Пн-Пт 8:30 — 17:00</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

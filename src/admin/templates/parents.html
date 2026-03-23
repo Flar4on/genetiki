@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% set active_page = "parents" %}
+
+{% block title %}Родители - РНС Якутия{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Родители</h2>
+    <span class="badge bg-primary fs-6">Всего: {{ parents|length }}</span>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ФИО</th>
+                        <th>Телефон</th>
+                        <th>Район</th>
+                        <th>Дата регистрации</th>
+                        <th>Детей</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for parent in parents %}
+                    <tr>
+                        <td>{{ parent.full_name }}</td>
+                        <td>{{ parent.phone }}</td>
+                        <td>{{ parent.region }}</td>
+                        <td>{{ parent.registration_date }}</td>
+                        <td><span class="badge bg-info">{{ parent.babies_count }}</span></td>
+                    </tr>
+                    {% endfor %}
+                    {% if not parents %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">Нет зарегистрированных родителей</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

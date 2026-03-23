@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% set active_page = "babies" %}
+
+{% block title %}Дети - РНС Якутия{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Дети</h2>
+    <span class="badge bg-success fs-6">Всего: {{ babies|length }}</span>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Имя</th>
+                        <th>Дата рождения</th>
+                        <th>Роддом</th>
+                        <th>Забор крови</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for baby in babies %}
+                    <tr>
+                        <td>{{ baby.name or '—' }}</td>
+                        <td>{{ baby.birth_date.strftime('%d.%m.%Y') if baby.birth_date else '—' }}</td>
+                        <td>{{ baby.birth_hospital or '—' }}</td>
+                        <td>
+                            {% if baby.sample_collected %}
+                            <span class="badge bg-success">Да</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Нет</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not babies %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">Нет добавленных детей</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

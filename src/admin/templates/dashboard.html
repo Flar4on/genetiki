@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% set active_page = "dashboard" %}
+
+{% block title %}Дашборд - РНС Якутия{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Дашборд</h2>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="text-muted small">Зарегистрировано родителей</div>
+                        <div class="fs-2 fw-bold">{{ total_parents }}</div>
+                    </div>
+                    <div class="fs-1 text-primary opacity-25"><i class="bi bi-people"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="text-muted small">Добавлено детей</div>
+                        <div class="fs-2 fw-bold">{{ total_babies }}</div>
+                    </div>
+                    <div class="fs-1 text-success opacity-25"><i class="bi bi-person-hearts"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="text-muted small">Результатов скрининга</div>
+                        <div class="fs-2 fw-bold">{{ total_screenings }}</div>
+                    </div>
+                    <div class="fs-1 text-warning opacity-25"><i class="bi bi-clipboard2-pulse"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card stat-card danger">
+            <div class="card-body">
+                <div class="text-muted small">Положительных результатов</div>
+                <div class="fs-3 fw-bold text-danger">{{ positive_count }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="text-muted small">Ожидающих уведомлений</div>
+                <div class="fs-3 fw-bold text-warning">{{ pending_notifs }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="text-muted small">Подтверждённых уведомлений</div>
+                <div class="fs-3 fw-bold text-success">{{ confirmed_notifs }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
