@@ -7,6 +7,7 @@ No database, Redis, or Telegram bot required.
 
 import hashlib
 import os
+import traceback
 import uuid
 from collections import Counter
 from dataclasses import dataclass, field
@@ -15,7 +16,7 @@ from enum import Enum
 from typing import Optional
 
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from jose import jwt
@@ -28,19 +29,19 @@ ADMIN_EMAIL = "admin@rns.local"
 ADMIN_PASSWORD = "admin123"
 OTP_CODE = "123456"
 
+
 def _find_base_dir() -> str:
     """Find the project root by looking for src/admin/templates/."""
     candidates = [
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),  # local: api/../
-        os.path.dirname(os.path.abspath(__file__)),                   # vercel: might flatten
-        os.getcwd(),                                                  # vercel: cwd is project root
-        "/var/task",                                                  # vercel python runtime
-        "/var/task/user",                                             # vercel alt
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        os.path.dirname(os.path.abspath(__file__)),
+        os.getcwd(),
+        "/var/task",
+        "/var/task/user",
     ]
     for c in candidates:
         if os.path.isdir(os.path.join(c, "src", "admin", "templates")):
             return c
-    # Fallback
     return candidates[0]
 
 
@@ -221,7 +222,6 @@ def seed_data():
         ("E75.0", "Спинальная мышечная атрофия"),
     ]
 
-    # screening patterns per baby: (disease_index, result_type_key)
     screening_map = {
         "Иванов Артём": [(0, "neg"), (1, "neg")],
         "Иванова Алиса": [(2, "repeat"), (3, "neg")],
@@ -286,7 +286,6 @@ def seed_data():
                 baby.screening_results.append(sr)
                 sr_counter += 1
 
-                # Notifications for non-negative results
                 if rt_map[res_key] == ResultType.positive:
                     n = Notification(
                         id=_uuid(f"notif-{notif_counter}"),
@@ -314,7 +313,6 @@ def seed_data():
                     parent.notifications.append(n)
                     notif_counter += 1
 
-    # Add "all clear" notifications for some parents
     for idx in [0, 2, 6, 9]:
         p = DB["parents"][idx]
         if p.babies and p.babies[0].screening_results:
@@ -332,7 +330,6 @@ def seed_data():
             p.notifications.append(n)
             notif_counter += 1
 
-    # Pending notification for Алексеева
     p5 = DB["parents"][5]
     if p5.babies:
         sr_placeholder = ScreeningResult(
@@ -358,7 +355,6 @@ def seed_data():
         p5.notifications.append(n)
 
 
-# Seed on module load (cold start)
 seed_data()
 
 
@@ -374,9 +370,22 @@ if os.path.isdir(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 
+# ── Template helper — compatible with both old and new Starlette ──
+
+
+def _render(tpl: Jinja2Templates, request: Request, name: str, ctx: Optional[dict] = None):
+    """Render template with compatibility for all FastAPI/Starlette versions."""
+    context = ctx or {}
+    context["request"] = request
+    return tpl.TemplateResponse(name=name, context=context)
+
+
+# ── Debug ──
+
+
 @app.get("/debug")
 async def debug_info():
-    """Diagnostic endpoint — remove after deployment works."""
+    import starlette
     return {
         "base_dir": BASE_DIR,
         "cwd": os.getcwd(),
@@ -385,6 +394,8 @@ async def debug_info():
         "portal_tpl_exists": os.path.isdir(os.path.join(BASE_DIR, "src", "portal", "templates")),
         "static_exists": os.path.isdir(static_dir),
         "parents_count": len(DB["parents"]),
+        "fastapi_version": __import__("fastapi").__version__,
+        "starlette_version": starlette.__version__,
     }
 
 
@@ -448,13 +459,13 @@ def _get_portal_parent(request: Request) -> Optional[Parent]:
 
 @app.get("/admin/login", response_class=HTMLResponse)
 async def admin_login_page(request: Request):
-    return admin_tpl.TemplateResponse("login.html", {"request": request})
+    return _render(admin_tpl, request, "login.html")
 
 
 @app.post("/admin/login")
 async def admin_login_submit(request: Request, email: str = Form(...), password: str = Form(...)):
     if email != ADMIN_EMAIL or password != ADMIN_PASSWORD:
-        return admin_tpl.TemplateResponse("login.html", {"request": request, "error": "Неверный email или пароль"})
+        return _render(admin_tpl, request, "login.html", {"error": "Неверный email или пароль"})
 
     token = create_access_token({"sub": email, "role": "admin"})
     response = RedirectResponse(url="/admin/", status_code=302)
@@ -475,19 +486,14 @@ async def admin_dashboard(request: Request):
     if not user:
         return RedirectResponse(url="/admin/login", status_code=302)
 
-    total_parents = len(DB["parents"])
-    total_babies = len(DB["babies"])
-    total_screenings = len(DB["screenings"])
-    positive_count = sum(1 for s in DB["screenings"] if s.result_type == ResultType.positive)
-    pending_notifs = sum(1 for n in DB["notifications"]
-                         if n.status in (NotificationStatus.pending, NotificationStatus.sent))
-    confirmed_notifs = sum(1 for n in DB["notifications"] if n.status == NotificationStatus.confirmed)
-
-    return admin_tpl.TemplateResponse("dashboard.html", {
-        "request": request, "user": user,
-        "total_parents": total_parents, "total_babies": total_babies,
-        "total_screenings": total_screenings, "positive_count": positive_count,
-        "pending_notifs": pending_notifs, "confirmed_notifs": confirmed_notifs,
+    return _render(admin_tpl, request, "dashboard.html", {
+        "user": user,
+        "total_parents": len(DB["parents"]),
+        "total_babies": len(DB["babies"]),
+        "total_screenings": len(DB["screenings"]),
+        "positive_count": sum(1 for s in DB["screenings"] if s.result_type == ResultType.positive),
+        "pending_notifs": sum(1 for n in DB["notifications"] if n.status in (NotificationStatus.pending, NotificationStatus.sent)),
+        "confirmed_notifs": sum(1 for n in DB["notifications"] if n.status == NotificationStatus.confirmed),
     })
 
 
@@ -497,18 +503,16 @@ async def admin_parents(request: Request):
     if not user:
         return RedirectResponse(url="/admin/login", status_code=302)
 
-    parents = []
-    for p in DB["parents"]:
-        parents.append({
-            "id": str(p.id),
-            "full_name": p.full_name,
-            "phone": p.phone,
-            "region": p.region,
-            "registration_date": p.registration_date.strftime("%d.%m.%Y") if p.registration_date else "—",
-            "babies_count": len(p.babies),
-        })
+    parents = [{
+        "id": str(p.id),
+        "full_name": p.full_name,
+        "phone": p.phone,
+        "region": p.region,
+        "registration_date": p.registration_date.strftime("%d.%m.%Y") if p.registration_date else "—",
+        "babies_count": len(p.babies),
+    } for p in DB["parents"]]
 
-    return admin_tpl.TemplateResponse("parents.html", {"request": request, "user": user, "parents": parents})
+    return _render(admin_tpl, request, "parents.html", {"user": user, "parents": parents})
 
 
 @app.get("/admin/babies", response_class=HTMLResponse)
@@ -517,7 +521,7 @@ async def admin_babies(request: Request):
     if not user:
         return RedirectResponse(url="/admin/login", status_code=302)
 
-    return admin_tpl.TemplateResponse("babies.html", {"request": request, "user": user, "babies": DB["babies"]})
+    return _render(admin_tpl, request, "babies.html", {"user": user, "babies": DB["babies"]})
 
 
 @app.get("/admin/screening", response_class=HTMLResponse)
@@ -526,7 +530,7 @@ async def admin_screening(request: Request):
     if not user:
         return RedirectResponse(url="/admin/login", status_code=302)
 
-    return admin_tpl.TemplateResponse("screening.html", {"request": request, "user": user, "results": DB["screenings"]})
+    return _render(admin_tpl, request, "screening.html", {"user": user, "results": DB["screenings"]})
 
 
 @app.get("/admin/notifications", response_class=HTMLResponse)
@@ -535,7 +539,7 @@ async def admin_notifications(request: Request):
     if not user:
         return RedirectResponse(url="/admin/login", status_code=302)
 
-    return admin_tpl.TemplateResponse("notifications.html", {"request": request, "user": user, "notifications": DB["notifications"]})
+    return _render(admin_tpl, request, "notifications.html", {"user": user, "notifications": DB["notifications"]})
 
 
 @app.get("/admin/analytics", response_class=HTMLResponse)
@@ -547,7 +551,7 @@ async def admin_analytics(request: Request):
     region_counter = Counter(p.region for p in DB["parents"] if p.region)
     region_stats = [{"region": r, "count": c} for r, c in region_counter.most_common()]
 
-    return admin_tpl.TemplateResponse("analytics.html", {"request": request, "user": user, "region_stats": region_stats})
+    return _render(admin_tpl, request, "analytics.html", {"user": user, "region_stats": region_stats})
 
 
 # ══════════════════════════════════════════════
@@ -557,35 +561,32 @@ async def admin_analytics(request: Request):
 
 @app.get("/portal/login", response_class=HTMLResponse)
 async def portal_login_page(request: Request):
-    return portal_tpl.TemplateResponse("portal_login.html", {"request": request, "step": "phone"})
+    return _render(portal_tpl, request, "portal_login.html", {"step": "phone"})
 
 
 @app.post("/portal/login/send-code")
 async def portal_send_code(request: Request, phone: str = Form(...)):
     parent = _find_parent_by_phone(phone)
     if not parent:
-        return portal_tpl.TemplateResponse("portal_login.html", {
-            "request": request, "step": "phone",
+        return _render(portal_tpl, request, "portal_login.html", {
+            "step": "phone",
             "error": "Номер не найден. Сначала зарегистрируйтесь через Telegram-бот.",
         })
 
-    # Demo: always use fixed code
-    return portal_tpl.TemplateResponse("portal_login.html", {
-        "request": request, "step": "code", "phone": phone,
-    })
+    return _render(portal_tpl, request, "portal_login.html", {"step": "code", "phone": phone})
 
 
 @app.post("/portal/login/verify")
 async def portal_verify_code(request: Request, phone: str = Form(...), code: str = Form(...)):
     parent = _find_parent_by_phone(phone)
     if not parent:
-        return portal_tpl.TemplateResponse("portal_login.html", {
-            "request": request, "step": "phone", "error": "Номер не найден.",
+        return _render(portal_tpl, request, "portal_login.html", {
+            "step": "phone", "error": "Номер не найден.",
         })
 
     if code.strip() != OTP_CODE:
-        return portal_tpl.TemplateResponse("portal_login.html", {
-            "request": request, "step": "code", "phone": phone,
+        return _render(portal_tpl, request, "portal_login.html", {
+            "step": "code", "phone": phone,
             "error": "Неверный код. Используйте код 123456.",
         })
 
@@ -610,8 +611,7 @@ async def portal_dashboard(request: Request):
 
     recent = sorted(parent.notifications, key=lambda n: n.created_at, reverse=True)[:5]
 
-    return portal_tpl.TemplateResponse("portal_dashboard.html", {
-        "request": request,
+    return _render(portal_tpl, request, "portal_dashboard.html", {
         "parent": parent,
         "parent_name": parent.full_name,
         "parent_phone": parent.phone,
@@ -626,8 +626,7 @@ async def portal_children(request: Request):
     if not parent:
         return RedirectResponse(url="/portal/login", status_code=302)
 
-    return portal_tpl.TemplateResponse("portal_children.html", {
-        "request": request,
+    return _render(portal_tpl, request, "portal_children.html", {
         "parent": parent,
         "parent_name": parent.full_name,
         "babies": parent.babies,
@@ -642,8 +641,7 @@ async def portal_notifications(request: Request):
 
     notifs = sorted(parent.notifications, key=lambda n: n.created_at, reverse=True)
 
-    return portal_tpl.TemplateResponse("portal_notifications.html", {
-        "request": request,
+    return _render(portal_tpl, request, "portal_notifications.html", {
         "parent": parent,
         "parent_name": parent.full_name,
         "notifications": notifs,
@@ -676,8 +674,7 @@ async def portal_info(request: Request):
     if not parent:
         return RedirectResponse(url="/portal/login", status_code=302)
 
-    return portal_tpl.TemplateResponse("portal_info.html", {
-        "request": request,
+    return _render(portal_tpl, request, "portal_info.html", {
         "parent": parent,
         "parent_name": parent.full_name,
     })
