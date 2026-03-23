@@ -377,7 +377,12 @@ def _render(tpl: Jinja2Templates, request: Request, name: str, ctx: Optional[dic
     """Render template with compatibility for all FastAPI/Starlette versions."""
     context = ctx or {}
     context["request"] = request
-    return tpl.TemplateResponse(name=name, context=context)
+    try:
+        # Starlette >= 0.37 (new API): request is first positional arg
+        return tpl.TemplateResponse(request, name=name, context=context)
+    except TypeError:
+        # Starlette < 0.37 (old API): name is first positional arg
+        return tpl.TemplateResponse(name=name, context=context)
 
 
 # ── Debug ──
