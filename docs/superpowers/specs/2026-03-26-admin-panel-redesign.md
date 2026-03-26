@@ -42,7 +42,7 @@ Each card:
 - Large number (2rem, font-weight 700)
 - Small gray label below
 - Icon on colored circle (48px) aligned right
-- Fake trend indicator below number: "↑ 12% за месяц" in green small text (hardcoded)
+- Fake trend indicators (hardcoded): "↑ 12%" for parents, "↑ 8%" for babies, "↑ 15%" for screenings — all in green small text
 
 ### Middle row — 3 status cards (compact)
 
@@ -57,10 +57,11 @@ Compact: number + label on one line, colored left border (4px), no icon circles.
 ### Bottom row — 2 blocks
 
 **Left (col-md-7): "Последние результаты"**
-- Card with list of 5 most recent screening results
+- Card with list of 5 most recent screening results, sorted by `received_at` descending
 - Each item: baby name, disease name, result badge, date
 - Compact list (no table), items separated by thin border-bottom
 - Result badges: green pill (отрицательный), red pill (положительный), orange pill (повторный)
+- Data structure: `recent_screenings` is a list of dicts `{baby_name, disease_name, result_type, received_at}`, built by joining `DB["screenings"]` with `DB["babies"]` on `baby_id`, sorted by `received_at` desc, limit 5
 
 **Right (col-md-5): "По районам"**
 - CSS horizontal bar chart (no Chart.js needed here)
@@ -79,7 +80,7 @@ Compact: number + label on one line, colored left border (4px), no icon circles.
 - th: uppercase, small (0.7rem), letter-spacing .05em, color #9ca3af, no border-bottom — just padding
 
 ### Parents table specifics
-- Avatar circle (36px) with initials, colored bg (derived from name hash) — before full_name
+- Avatar circle (36px) with initials, colored bg — before full_name. Color computed server-side: `hash(full_name) % 8` mapped to a palette of 8 pastel colors, passed as `avatar_color` in each parent dict
 - Region shown as colored chip/pill (light bg + colored text)
 - Phone in monospace font
 
@@ -94,7 +95,7 @@ Compact: number + label on one line, colored left border (4px), no icon circles.
 
 ### Notifications table specifics
 - Colored left border on each row (4px), color matches status
-- Status badge colors: confirmed=#10b981, sent=#3b82f6, pending=#9ca3af, escalated=#ef4444
+- Status badge colors: confirmed=#10b981, sent=#3b82f6, pending=#9ca3af, escalated=#ef4444, delivered=#3b82f6 (same as sent — unused in seed data but handled for safety)
 - Message text shown fully (no truncation), smaller font size (0.85rem)
 
 ## 5. Analytics Page
@@ -143,7 +144,17 @@ New template variables needed:
 | `src/admin/templates/login.html` | Minor — match new font/style |
 | `api/index.py` | Update — add recent_screenings, screening_stats, notification_stats |
 
-## 8. Out of Scope
+## 8. Implementation Notes
+
+- **Sidebar active state**: preserve `{% set active_page = "..." %}` pattern from current templates; base.html checks `{% if active_page == '...' %}` to apply active class
+- **Chart.js**: keep loaded only in `analytics.html` via `{% block extra_head %}`; dashboard uses CSS-only bars (intentional lightweight preview vs full analytics charts)
+- **Dashboard region bars vs Analytics chart**: intentional duplication — dashboard shows a compact CSS preview, analytics has full interactive Chart.js chart
+- **Screening table**: add baby_name column (same join as dashboard recent_screenings)
+- **Notifications table**: add parent_name column for admin context
+- **Empty states**: preserve existing empty-state patterns from current templates
+- **Login page**: keep current gradient bg, just add Inter font link
+
+## 9. Out of Scope
 
 - No JavaScript interactivity (search, sort, filter) — visual only for demo
 - No responsive/mobile layout — desktop-only for projection at defense
