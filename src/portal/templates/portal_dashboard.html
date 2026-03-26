@@ -7,99 +7,122 @@
 <div class="row g-4">
     <!-- Profile card -->
     <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-person-circle me-2 text-primary"></i>Мой профиль</h5>
-                <hr>
-                <p><strong>ФИО:</strong> {{ parent_name }}</p>
-                <p><strong>Телефон:</strong> {{ parent_phone }}</p>
-                <p><strong>Район:</strong> {{ parent.region or '—' }}</p>
-                <p><strong>Дата регистрации:</strong> {{ parent.registration_date.strftime('%d.%m.%Y') if parent.registration_date else '—' }}</p>
+        <div class="portal-card p-4 h-100">
+            <div class="section-title mb-3">
+                <i class="bi bi-person-circle"></i>Мой профиль
+            </div>
+            <div class="mb-3">
+                <div class="info-label">ФИО</div>
+                <div class="info-value">{{ parent_name }}</div>
+            </div>
+            <div class="mb-3">
+                <div class="info-label">Телефон</div>
+                <div class="info-value" style="font-family: 'SF Mono', 'Consolas', monospace;">{{ parent_phone }}</div>
+            </div>
+            <div class="mb-3">
+                <div class="info-label">Район</div>
+                <div class="info-value">
+                    <span class="badge-pill badge-blue">{{ parent.region or '—' }}</span>
+                </div>
+            </div>
+            <div>
+                <div class="info-label">Дата регистрации</div>
+                <div class="info-value">{{ parent.registration_date.strftime('%d.%m.%Y') if parent.registration_date else '—' }}</div>
             </div>
         </div>
     </div>
 
     <!-- Children summary -->
     <div class="col-md-8">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title mb-0"><i class="bi bi-person-hearts me-2 text-success"></i>Мои дети</h5>
-                    <a href="/portal/children" class="btn btn-sm btn-outline-primary">Подробнее</a>
+        <div class="portal-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="section-title">
+                    <i class="bi bi-person-hearts"></i>Мои дети
                 </div>
-                <hr>
-                {% if babies %}
-                <div class="row g-3">
-                    {% for baby in babies %}
-                    <div class="col-md-6">
-                        <div class="card baby-card">
-                            <div class="card-body py-3">
-                                <h6 class="mb-1">{{ baby.name or 'Без имени' }}</h6>
-                                <small class="text-muted">
-                                    {{ baby.birth_date.strftime('%d.%m.%Y') if baby.birth_date else '—' }}
-                                    &middot; {{ baby.birth_hospital or '' }}
-                                </small>
-                                <div class="mt-2">
-                                    {% if baby.screening_results %}
-                                    {% for sr in baby.screening_results %}
-                                    {% if sr.result_type.value == 'positive' %}
-                                    <span class="badge bg-danger screening-badge">Положительный</span>
-                                    {% elif sr.result_type.value == 'negative' %}
-                                    <span class="badge bg-success screening-badge">Отрицательный</span>
-                                    {% else %}
-                                    <span class="badge bg-warning screening-badge">Повторный забор</span>
-                                    {% endif %}
-                                    {% endfor %}
-                                    {% else %}
-                                    <span class="text-muted small">Результатов пока нет</span>
-                                    {% endif %}
-                                </div>
-                            </div>
+                <a href="/portal/children" class="badge-pill badge-blue" style="text-decoration: none;">
+                    Подробнее <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            {% if babies %}
+            <div class="row g-3">
+                {% for baby in babies %}
+                <div class="col-md-6">
+                    <div class="baby-card {% if baby.name and baby.name[-1:] in ['а', 'я'] %}pink{% else %}blue{% endif %} portal-card p-3" style="box-shadow: none;">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            {% if baby.name and baby.name[-1:] in ['а', 'я'] %}
+                            <i class="bi bi-gender-female" style="color: #ec4899;"></i>
+                            {% else %}
+                            <i class="bi bi-gender-male" style="color: #3b82f6;"></i>
+                            {% endif %}
+                            <span class="fw-semibold" style="color: #111827;">{{ baby.name or 'Без имени' }}</span>
+                        </div>
+                        <div style="font-size: .8rem; color: #9ca3af; margin-bottom: 8px;">
+                            {{ baby.birth_date.strftime('%d.%m.%Y') if baby.birth_date else '—' }}
+                            &middot; {{ baby.birth_hospital or '' }}
+                        </div>
+                        <div class="d-flex gap-1 flex-wrap">
+                            {% if baby.screening_results %}
+                            {% for sr in baby.screening_results %}
+                            {% if sr.result_type.value == 'positive' %}
+                            <span class="badge-pill badge-red"><i class="bi bi-exclamation-triangle"></i></span>
+                            {% elif sr.result_type.value == 'negative' %}
+                            <span class="badge-pill badge-green"><i class="bi bi-check-circle"></i></span>
+                            {% else %}
+                            <span class="badge-pill badge-orange"><i class="bi bi-arrow-repeat"></i></span>
+                            {% endif %}
+                            {% endfor %}
+                            {% else %}
+                            <span style="font-size: .8rem; color: #9ca3af;">Результатов пока нет</span>
+                            {% endif %}
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
-                {% else %}
-                <p class="text-muted">Нет добавленных детей. Добавьте ребёнка через Max-бот.</p>
-                {% endif %}
+                {% endfor %}
             </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-person-plus" style="font-size: 2rem; color: #d1d5db;"></i>
+                <p class="mt-2" style="color: #9ca3af; font-size: .9rem;">Нет добавленных детей. Добавьте ребёнка через Max-бот.</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <!-- Recent notifications -->
-<div class="card mt-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="card-title mb-0"><i class="bi bi-bell me-2 text-warning"></i>Последние уведомления</h5>
-            <a href="/portal/notifications" class="btn btn-sm btn-outline-primary">Все уведомления</a>
+<div class="portal-card p-4 mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="section-title">
+            <i class="bi bi-bell"></i>Последние уведомления
         </div>
-        <hr>
-        {% if recent_notifications %}
-        {% for n in recent_notifications %}
-        <div class="d-flex justify-content-between align-items-start py-2 {% if not loop.last %}border-bottom{% endif %}">
-            <div>
-                <p class="mb-1">{{ n.message_text }}</p>
-                <small class="text-muted">
-                    {{ n.created_at.strftime('%d.%m.%Y %H:%M') if n.created_at else '' }}
-                </small>
-            </div>
-            <div>
-                {% if n.status.value == 'confirmed' %}
-                <span class="badge bg-success">Подтверждено</span>
-                {% elif n.status.value == 'escalated' %}
-                <span class="badge bg-danger">Эскалация</span>
-                {% elif n.status.value == 'sent' or n.status.value == 'delivered' %}
-                <span class="badge bg-info">Отправлено</span>
-                {% else %}
-                <span class="badge bg-secondary">Ожидает</span>
-                {% endif %}
-            </div>
-        </div>
-        {% endfor %}
-        {% else %}
-        <p class="text-muted mb-0">Уведомлений пока нет</p>
-        {% endif %}
+        <a href="/portal/notifications" class="badge-pill badge-blue" style="text-decoration: none;">
+            Все уведомления <i class="bi bi-arrow-right"></i>
+        </a>
     </div>
+    {% if recent_notifications %}
+    {% for n in recent_notifications %}
+    <div class="d-flex justify-content-between align-items-start py-3 {% if not loop.last %}border-bottom{% endif %}" style="border-color: #f3f4f6 !important;">
+        <div>
+            <p class="mb-1" style="font-size: .9rem; color: #374151;">{{ n.message_text }}</p>
+            <span style="font-size: .75rem; color: #9ca3af;">
+                {{ n.created_at.strftime('%d.%m.%Y %H:%M') if n.created_at else '' }}
+            </span>
+        </div>
+        <div class="ms-3">
+            {% if n.status.value == 'confirmed' %}
+            <span class="badge-pill badge-green"><i class="bi bi-check-circle"></i> Подтверждено</span>
+            {% elif n.status.value == 'escalated' %}
+            <span class="badge-pill badge-red">Эскалация</span>
+            {% elif n.status.value in ('sent', 'delivered') %}
+            <span class="badge-pill badge-blue">Отправлено</span>
+            {% else %}
+            <span class="badge-pill badge-gray">Ожидает</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="color: #9ca3af; font-size: .9rem;" class="mb-0">Уведомлений пока нет</p>
+    {% endif %}
 </div>
 {% endblock %}

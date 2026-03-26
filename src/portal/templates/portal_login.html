@@ -6,56 +6,114 @@
     <title>Вход — Личный кабинет НС</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        * { font-family: 'Inter', sans-serif; }
         body {
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            background: #f8f9fa;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .login-card { max-width: 440px; width: 100%; }
+        .login-card {
+            max-width: 420px;
+            width: 100%;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.06);
+            border: 1px solid #f3f4f6;
+            padding: 2.5rem;
+        }
+        .login-logo i {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .login-title {
+            font-weight: 700;
+            color: #111827;
+            font-size: 1.3rem;
+        }
+        .login-subtitle { color: #9ca3af; font-size: .88rem; }
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            padding: 10px 14px;
+            font-size: .9rem;
+        }
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+        }
+        .input-group-text {
+            border-radius: 10px 0 0 10px;
+            border: 1px solid #e5e7eb;
+            border-right: none;
+            background: #f9fafb;
+            color: #9ca3af;
+        }
+        .input-group .form-control { border-radius: 0 10px 10px 0; }
+        .btn-login {
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            font-weight: 600;
+            font-size: .9rem;
+            color: #fff;
+            transition: all .2s;
+        }
+        .btn-login:hover {
+            box-shadow: 0 6px 20px rgba(59,130,246,.3);
+            transform: translateY(-1px);
+            color: #fff;
+        }
+        .back-link {
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: .85rem;
+            transition: color .15s;
+        }
+        .back-link:hover { color: #3b82f6; }
     </style>
 </head>
 <body>
     <div class="login-card">
-        <div class="card shadow-sm">
-            <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    <i class="bi bi-heart-pulse text-primary fs-1"></i>
-                    <h4 class="fw-bold mt-2">Личный кабинет</h4>
-                    <p class="text-muted">Неонатальный скрининг РС(Я)</p>
-                </div>
+        <div class="text-center mb-4">
+            <div class="login-logo mb-2"><i class="bi bi-heart-pulse"></i></div>
+            <div class="login-title">Личный кабинет</div>
+            <div class="login-subtitle">Неонатальный скрининг РС(Я)</div>
+        </div>
 
-                {% if error %}
-                <div class="alert alert-danger py-2">{{ error }}</div>
-                {% endif %}
+        {% if error %}
+        <div class="alert alert-danger py-2" style="border-radius: 10px; font-size: .85rem;">{{ error }}</div>
+        {% endif %}
 
-                <form method="POST" action="/portal/login">
-                    <div class="mb-3">
-                        <label class="form-label">Номер телефона</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                            <input type="tel" name="phone" class="form-control" placeholder="+7 (___) ___-__-__" required autofocus>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Пароль</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" name="password" class="form-control" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">
-                        <i class="bi bi-box-arrow-in-right me-1"></i>Войти
-                    </button>
-                </form>
-
-                <hr class="my-4">
-                <div class="text-muted small text-center">
-                    <a href="/" class="text-muted"><i class="bi bi-arrow-left me-1"></i>На главную</a>
+        <form method="POST" action="/portal/login">
+            <div class="mb-3">
+                <label class="form-label" style="font-size: .85rem; font-weight: 500; color: #374151;">Номер телефона</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                    <input type="tel" name="phone" class="form-control" placeholder="+7 (___) ___-__-__" required autofocus>
                 </div>
             </div>
+            <div class="mb-4">
+                <label class="form-label" style="font-size: .85rem; font-weight: 500; color: #374151;">Пароль</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-login w-100">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Войти
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <a href="/" class="back-link"><i class="bi bi-arrow-left me-1"></i>На главную</a>
         </div>
     </div>
 </body>

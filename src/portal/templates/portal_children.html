@@ -4,78 +4,95 @@
 {% block title %}Мои дети — НС{% endblock %}
 
 {% block content %}
-<h2 class="mb-4"><i class="bi bi-person-hearts me-2 text-primary"></i>Мои дети</h2>
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0;">
+        <i class="bi bi-person-hearts me-2" style="color: #9ca3af;"></i>Мои дети
+    </h2>
+</div>
 
 {% if babies %}
 {% for baby in babies %}
-<div class="card mb-4 baby-card">
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-4">
-                <h4 class="mb-3">{{ baby.name or 'Без имени' }}</h4>
-                <p><i class="bi bi-calendar3 me-2"></i><strong>Дата рождения:</strong>
-                    {{ baby.birth_date.strftime('%d.%m.%Y') if baby.birth_date else '—' }}
-                </p>
-                <p><i class="bi bi-hospital me-2"></i><strong>Роддом:</strong>
-                    {{ baby.birth_hospital or '—' }}
-                </p>
-                <p><i class="bi bi-droplet me-2"></i><strong>Забор крови:</strong>
-                    {% if baby.sample_collected %}
-                    <span class="badge bg-success">Выполнен</span>
-                    {% else %}
-                    <span class="badge bg-secondary">Не выполнен</span>
-                    {% endif %}
-                </p>
-            </div>
-            <div class="col-md-8">
-                <h5 class="mb-3">Результаты скрининга</h5>
-                {% if baby.screening_results %}
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Дата</th>
-                                <th>Результат</th>
-                                <th>Заболевание</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for sr in baby.screening_results %}
-                            <tr>
-                                <td>{{ sr.received_at.strftime('%d.%m.%Y') if sr.received_at else '—' }}</td>
-                                <td>
-                                    {% if sr.result_type.value == 'positive' %}
-                                    <span class="status-positive"><i class="bi bi-exclamation-triangle me-1"></i>Положительный</span>
-                                    {% elif sr.result_type.value == 'negative' %}
-                                    <span class="status-negative"><i class="bi bi-check-circle me-1"></i>Отрицательный</span>
-                                    {% else %}
-                                    <span class="status-repeat"><i class="bi bi-arrow-repeat me-1"></i>Повторный забор</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ sr.disease_name or sr.disease_code or '—' }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+<div class="portal-card mb-4" style="overflow: hidden;">
+    <div class="d-flex" style="min-height: 0;">
+        <!-- Baby info -->
+        <div style="width: 320px; padding: 1.75rem; border-right: 1px solid #f3f4f6; flex-shrink: 0;">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                {% if baby.name and baby.name[-1:] in ['а', 'я'] %}
+                <i class="bi bi-gender-female" style="color: #ec4899; font-size: 1.2rem;"></i>
                 {% else %}
-                <div class="alert alert-light">
-                    <i class="bi bi-clock me-2"></i>
-                    Результаты скрининга ещё не получены. Мы уведомим вас, когда они будут готовы.
-                </div>
+                <i class="bi bi-gender-male" style="color: #3b82f6; font-size: 1.2rem;"></i>
                 {% endif %}
+                <h5 style="font-weight: 700; color: #111827; margin: 0;">{{ baby.name or 'Без имени' }}</h5>
             </div>
+            <div class="mb-2">
+                <div class="info-label"><i class="bi bi-calendar3 me-1"></i>Дата рождения</div>
+                <div class="info-value">{{ baby.birth_date.strftime('%d.%m.%Y') if baby.birth_date else '—' }}</div>
+            </div>
+            <div class="mb-2">
+                <div class="info-label"><i class="bi bi-hospital me-1"></i>Роддом</div>
+                <div class="info-value" style="font-size: .88rem;">{{ baby.birth_hospital or '—' }}</div>
+            </div>
+            <div>
+                <div class="info-label"><i class="bi bi-droplet me-1"></i>Забор крови</div>
+                <div class="mt-1">
+                    {% if baby.sample_collected %}
+                    <span class="badge-pill badge-green"><i class="bi bi-check-circle-fill"></i> Выполнен</span>
+                    {% else %}
+                    <span class="badge-pill badge-red"><i class="bi bi-x-circle"></i> Не выполнен</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Screening results -->
+        <div style="flex: 1; padding: 1.75rem;">
+            <div class="section-title mb-3">
+                <i class="bi bi-clipboard2-pulse"></i>Результаты скрининга
+            </div>
+            {% if baby.screening_results %}
+            <table class="portal-table">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Результат</th>
+                        <th>Заболевание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sr in baby.screening_results %}
+                    <tr>
+                        <td style="font-size: .85rem; color: #6b7280;">{{ sr.received_at.strftime('%d.%m.%Y') if sr.received_at else '—' }}</td>
+                        <td>
+                            {% if sr.result_type.value == 'positive' %}
+                            <span class="badge-pill badge-red"><i class="bi bi-exclamation-triangle"></i> Положительный</span>
+                            {% elif sr.result_type.value == 'negative' %}
+                            <span class="badge-pill badge-green"><i class="bi bi-check-circle"></i> Отрицательный</span>
+                            {% else %}
+                            <span class="badge-pill badge-orange"><i class="bi bi-arrow-repeat"></i> Повторный забор</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-medium">{{ sr.disease_name or sr.disease_code or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-clock" style="font-size: 1.5rem; color: #d1d5db;"></i>
+                <p class="mt-2 mb-0" style="color: #9ca3af; font-size: .88rem;">
+                    Результаты скрининга ещё не получены. Мы уведомим вас, когда они будут готовы.
+                </p>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 {% endfor %}
 {% else %}
-<div class="card">
-    <div class="card-body text-center py-5">
-        <i class="bi bi-person-plus fs-1 text-muted"></i>
-        <h5 class="mt-3 text-muted">Нет добавленных детей</h5>
-        <p class="text-muted">Добавьте ребёнка через Max-бот, чтобы отслеживать результаты скрининга.</p>
-    </div>
+<div class="portal-card p-5 text-center">
+    <i class="bi bi-person-plus" style="font-size: 2.5rem; color: #d1d5db;"></i>
+    <h5 class="mt-3" style="color: #6b7280;">Нет добавленных детей</h5>
+    <p style="color: #9ca3af; font-size: .9rem;">Добавьте ребёнка через Max-бот, чтобы отслеживать результаты скрининга.</p>
 </div>
 {% endif %}
 {% endblock %}
