@@ -4,46 +4,51 @@
 {% block title %}Дети - НС Якутия{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <h2>Дети</h2>
-    <span class="badge bg-success fs-6">Всего: {{ babies|length }}</span>
+    <div class="d-flex align-items-center gap-3">
+        <input type="text" class="search-input" placeholder="Поиск...">
+        <span class="count-badge">Всего: {{ babies|length }}</span>
+    </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Имя</th>
-                        <th>Дата рождения</th>
-                        <th>Роддом</th>
-                        <th>Забор крови</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for baby in babies %}
-                    <tr>
-                        <td>{{ baby.name or '—' }}</td>
-                        <td>{{ baby.birth_date.strftime('%d.%m.%Y') if baby.birth_date else '—' }}</td>
-                        <td>{{ baby.birth_hospital or '—' }}</td>
-                        <td>
-                            {% if baby.sample_collected %}
-                            <span class="badge bg-success">Да</span>
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Имя</th>
+                    <th>Дата рождения</th>
+                    <th>Роддом</th>
+                    <th>Забор крови</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in babies %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if b.name and b.name[-1:] in ['а', 'я'] %}
+                            <i class="bi bi-gender-female" style="color: #ec4899; font-size: 1.1rem;"></i>
                             {% else %}
-                            <span class="badge bg-secondary">Нет</span>
+                            <i class="bi bi-gender-male" style="color: #3b82f6; font-size: 1.1rem;"></i>
                             {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% if not babies %}
-                    <tr>
-                        <td colspan="4" class="text-center text-muted py-4">Нет добавленных детей</td>
-                    </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
+                            <span class="fw-medium">{{ b.name }}</span>
+                        </div>
+                    </td>
+                    <td>{{ b.birth_date.strftime("%d.%m.%Y") if b.birth_date else "—" }}</td>
+                    <td style="font-size: .85rem;">{{ b.birth_hospital or "—" }}</td>
+                    <td>
+                        {% if b.sample_collected %}
+                        <span class="badge-pill badge-green"><i class="bi bi-check-circle-fill"></i> Выполнен</span>
+                        {% else %}
+                        <span class="badge-pill badge-red"><i class="bi bi-x-circle"></i> Нет</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

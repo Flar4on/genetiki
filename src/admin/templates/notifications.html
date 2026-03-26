@@ -4,56 +4,49 @@
 {% block title %}Уведомления - НС Якутия{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <h2>Уведомления</h2>
-    <span class="badge bg-info fs-6">Всего: {{ notifications|length }}</span>
+    <div class="d-flex align-items-center gap-3">
+        <input type="text" class="search-input" placeholder="Поиск...">
+        <span class="count-badge">Всего: {{ notifications|length }}</span>
+    </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Дата создания</th>
-                        <th>Статус</th>
-                        <th>Текст</th>
-                        <th>Попыток</th>
-                        <th>Отправлено</th>
-                        <th>Подтверждено</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for n in notifications %}
-                    <tr>
-                        <td>{{ n.created_at.strftime('%d.%m.%Y %H:%M') if n.created_at else '—' }}</td>
-                        <td>
-                            {% if n.status.value == 'confirmed' %}
-                            <span class="badge bg-success">Подтверждено</span>
-                            {% elif n.status.value == 'escalated' %}
-                            <span class="badge bg-danger">Эскалация</span>
-                            {% elif n.status.value == 'sent' %}
-                            <span class="badge bg-info">Отправлено</span>
-                            {% elif n.status.value == 'delivered' %}
-                            <span class="badge bg-primary">Доставлено</span>
-                            {% else %}
-                            <span class="badge bg-secondary">Ожидает</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-truncate" style="max-width: 300px;">{{ n.message_text }}</td>
-                        <td>{{ n.retry_count }}</td>
-                        <td>{{ n.sent_at.strftime('%d.%m.%Y %H:%M') if n.sent_at else '—' }}</td>
-                        <td>{{ n.confirmed_at.strftime('%d.%m.%Y %H:%M') if n.confirmed_at else '—' }}</td>
-                    </tr>
-                    {% endfor %}
-                    {% if not notifications %}
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-4">Нет уведомлений</td>
-                    </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Родитель</th>
+                    <th>Статус</th>
+                    <th>Сообщение</th>
+                    <th>Отправлено</th>
+                    <th>Подтверждено</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for n in notifications %}
+                {% set status_color = '#10b981' if n.status.value == 'confirmed' else '#3b82f6' if n.status.value in ('sent', 'delivered') else '#9ca3af' if n.status.value == 'pending' else '#ef4444' %}
+                <tr style="border-left: 4px solid {{ status_color }};">
+                    <td class="fw-medium">{{ n.parent_name }}</td>
+                    <td>
+                        {% if n.status.value == 'confirmed' %}
+                        <span class="badge-pill badge-green">Подтверждено</span>
+                        {% elif n.status.value == 'sent' or n.status.value == 'delivered' %}
+                        <span class="badge-pill badge-blue">Отправлено</span>
+                        {% elif n.status.value == 'pending' %}
+                        <span class="badge-pill badge-gray">Ожидает</span>
+                        {% elif n.status.value == 'escalated' %}
+                        <span class="badge-pill badge-red">Эскалация</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size: .85rem; color: #4b5563; max-width: 400px;">{{ n.message_text }}</td>
+                    <td style="font-size: .82rem; color: #6b7280;">{{ n.sent_at.strftime("%d.%m.%Y %H:%M") if n.sent_at else "—" }}</td>
+                    <td style="font-size: .82rem; color: #6b7280;">{{ n.confirmed_at.strftime("%d.%m.%Y %H:%M") if n.confirmed_at else "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

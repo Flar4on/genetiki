@@ -4,50 +4,46 @@
 {% block title %}Скрининг - НС Якутия{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-header">
     <h2>Результаты скрининга</h2>
-    <span class="badge bg-warning fs-6">Всего: {{ results|length }}</span>
+    <div class="d-flex align-items-center gap-3">
+        <input type="text" class="search-input" placeholder="Поиск...">
+        <span class="count-badge">Всего: {{ results|length }}</span>
+    </div>
 </div>
 
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Дата</th>
-                        <th>Результат</th>
-                        <th>Код заболевания</th>
-                        <th>Название</th>
-                        <th>Источник</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for r in results %}
-                    <tr>
-                        <td>{{ r.received_at.strftime('%d.%m.%Y %H:%M') if r.received_at else '—' }}</td>
-                        <td>
-                            {% if r.result_type.value == 'positive' %}
-                            <span class="badge bg-danger">Положительный</span>
-                            {% elif r.result_type.value == 'negative' %}
-                            <span class="badge bg-success">Отрицательный</span>
-                            {% else %}
-                            <span class="badge bg-warning">Повторный забор</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ r.disease_code or '—' }}</td>
-                        <td>{{ r.disease_name or '—' }}</td>
-                        <td>{{ r.source or '—' }}</td>
-                    </tr>
-                    {% endfor %}
-                    {% if not results %}
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">Нет результатов скрининга</td>
-                    </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Ребёнок</th>
+                    <th>Заболевание</th>
+                    <th>Код</th>
+                    <th>Результат</th>
+                    <th>Дата</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in results %}
+                <tr>
+                    <td class="fw-medium">{{ r.baby_name }}</td>
+                    <td class="fw-semibold" style="color: #111827;">{{ r.disease_name or "—" }}</td>
+                    <td><span class="badge-pill badge-gray">{{ r.disease_code or "—" }}</span></td>
+                    <td>
+                        {% if r.result_type.value == 'negative' %}
+                        <span class="badge-pill badge-green"><i class="bi bi-check-circle"></i> Отрицательный</span>
+                        {% elif r.result_type.value == 'positive' %}
+                        <span class="badge-pill badge-red"><i class="bi bi-exclamation-triangle"></i> Положительный</span>
+                        {% else %}
+                        <span class="badge-pill badge-orange"><i class="bi bi-arrow-repeat"></i> Повторный забор</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size: .85rem; color: #6b7280;">{{ r.received_at.strftime("%d.%m.%Y %H:%M") if r.received_at else "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

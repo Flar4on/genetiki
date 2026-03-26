@@ -8,47 +8,81 @@
 {% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Аналитика</h2>
+<div class="page-header">
+    <h2>Аналитика</h2>
+</div>
+
+<!-- Region bar chart -->
+<div class="admin-card p-4 mb-4">
+    <h6 class="fw-semibold mb-3" style="color: #374151;">
+        <i class="bi bi-geo-alt me-2 text-muted"></i>Распределение по районам
+    </h6>
+    <canvas id="regionChart" height="250"></canvas>
+</div>
 
 <div class="row g-4">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Распределение по районам</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="regionChart" height="300"></canvas>
+    <!-- Screening results doughnut -->
+    <div class="col-md-6">
+        <div class="admin-card p-4">
+            <h6 class="fw-semibold mb-3" style="color: #374151;">
+                <i class="bi bi-clipboard2-pulse me-2 text-muted"></i>Результаты скрининга
+            </h6>
+            <div class="d-flex align-items-center gap-4">
+                <div style="width: 180px; height: 180px;">
+                    <canvas id="screeningChart"></canvas>
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                        <span style="font-size: .85rem; color: #6b7280;">Отрицательные</span>
+                        <span class="fw-semibold ms-auto" style="font-size: .9rem;">{{ screening_stats.negative }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                        <span style="font-size: .85rem; color: #6b7280;">Положительные</span>
+                        <span class="fw-semibold ms-auto" style="font-size: .9rem;">{{ screening_stats.positive }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+                        <span style="font-size: .85rem; color: #6b7280;">Повторный забор</span>
+                        <span class="fw-semibold ms-auto" style="font-size: .9rem;">{{ screening_stats.repeat }}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Статистика по районам</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Район</th>
-                                <th>Родителей</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for stat in region_stats %}
-                            <tr>
-                                <td>{{ stat.region }}</td>
-                                <td><span class="badge bg-primary">{{ stat.count }}</span></td>
-                            </tr>
-                            {% endfor %}
-                            {% if not region_stats %}
-                            <tr>
-                                <td colspan="2" class="text-center text-muted">Нет данных</td>
-                            </tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
+
+    <!-- Notification status doughnut -->
+    <div class="col-md-6">
+        <div class="admin-card p-4">
+            <h6 class="fw-semibold mb-3" style="color: #374151;">
+                <i class="bi bi-bell me-2 text-muted"></i>Статус уведомлений
+            </h6>
+            <div class="d-flex align-items-center gap-4">
+                <div style="width: 180px; height: 180px;">
+                    <canvas id="notifChart"></canvas>
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                        <span style="font-size: .85rem; color: #6b7280;">Подтверждено</span>
+                        <span class="fw-semibold ms-auto" style="font-size: .9rem;">{{ notification_stats.confirmed }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span style="width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; display: inline-block;"></span>
+                        <span style="font-size: .85rem; color: #6b7280;">Отправлено</span>
+                        <span class="fw-semibold ms-auto" style="font-size: .9rem;">{{ notification_stats.sent }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span style="width: 12px; height: 12px; border-radius: 50%; background: #9ca3af; display: inline-block;"></span>
+                        <span style="font-size: .85rem; color: #6b7280;">Ожидает</span>
+                        <span class="fw-semibold ms-auto" style="font-size: .9rem;">{{ notification_stats.pending }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                        <span style="font-size: .85rem; color: #6b7280;">Эскалация</span>
+                        <span class="fw-semibold ms-auto" style="font-size: .9rem;">{{ notification_stats.escalated }}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -59,26 +93,70 @@
 {% block extra_scripts %}
 <script>
 const regionData = {{ region_stats | tojson }};
-if (regionData.length > 0) {
-    new Chart(document.getElementById('regionChart'), {
-        type: 'bar',
-        data: {
-            labels: regionData.map(r => r.region),
-            datasets: [{
-                label: 'Родителей',
-                data: regionData.map(r => r.count),
-                backgroundColor: '#1a237e',
-                borderRadius: 4,
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } }
-            }
+
+// Region horizontal bar chart
+new Chart(document.getElementById('regionChart'), {
+    type: 'bar',
+    data: {
+        labels: regionData.map(r => r.region),
+        datasets: [{
+            data: regionData.map(r => r.count),
+            backgroundColor: regionData.map((_, i) => {
+                const t = i / Math.max(regionData.length - 1, 1);
+                const r = Math.round(59 + (16 - 59) * t);
+                const g = Math.round(130 + (185 - 130) * t);
+                const b = Math.round(246 + (129 - 246) * t);
+                return `rgb(${r},${g},${b})`;
+            }),
+            borderRadius: 6,
+            barThickness: 28,
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: '#f3f4f6' }, ticks: { stepSize: 1 } },
+            y: { grid: { display: false } }
         }
-    });
-}
+    }
+});
+
+// Screening doughnut
+new Chart(document.getElementById('screeningChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Отрицательные', 'Положительные', 'Повторный забор'],
+        datasets: [{
+            data: [{{ screening_stats.negative }}, {{ screening_stats.positive }}, {{ screening_stats.repeat }}],
+            backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+            borderWidth: 0,
+        }]
+    },
+    options: {
+        responsive: true,
+        cutout: '65%',
+        plugins: { legend: { display: false } }
+    }
+});
+
+// Notification doughnut
+new Chart(document.getElementById('notifChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Подтверждено', 'Отправлено', 'Ожидает', 'Эскалация'],
+        datasets: [{
+            data: [{{ notification_stats.confirmed }}, {{ notification_stats.sent }}, {{ notification_stats.pending }}, {{ notification_stats.escalated }}],
+            backgroundColor: ['#10b981', '#3b82f6', '#9ca3af', '#ef4444'],
+            borderWidth: 0,
+        }]
+    },
+    options: {
+        responsive: true,
+        cutout: '65%',
+        plugins: { legend: { display: false } }
+    }
+});
 </script>
 {% endblock %}
