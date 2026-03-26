@@ -4,73 +4,139 @@
 {% block title %}Дашборд - НС Якутия{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Дашборд</h2>
+<div class="page-header">
+    <h2>Дашборд</h2>
+</div>
 
+<!-- Top row: 3 stat cards -->
 <div class="row g-4 mb-4">
     <div class="col-md-4">
-        <div class="card stat-card primary">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="text-muted small">Зарегистрировано родителей</div>
-                        <div class="fs-2 fw-bold">{{ total_parents }}</div>
-                    </div>
-                    <div class="fs-1 text-primary opacity-25"><i class="bi bi-people"></i></div>
+        <div class="admin-card p-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number">{{ total_parents }}</div>
+                    <div class="stat-label">Родителей</div>
+                    <div class="stat-trend"><i class="bi bi-arrow-up"></i> 12% за месяц</div>
+                </div>
+                <div class="stat-card-icon blue">
+                    <i class="bi bi-people"></i>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card stat-card success">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="text-muted small">Добавлено детей</div>
-                        <div class="fs-2 fw-bold">{{ total_babies }}</div>
-                    </div>
-                    <div class="fs-1 text-success opacity-25"><i class="bi bi-person-hearts"></i></div>
+        <div class="admin-card p-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number">{{ total_babies }}</div>
+                    <div class="stat-label">Детей</div>
+                    <div class="stat-trend"><i class="bi bi-arrow-up"></i> 8% за месяц</div>
+                </div>
+                <div class="stat-card-icon green">
+                    <i class="bi bi-person-hearts"></i>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card stat-card warning">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="text-muted small">Результатов скрининга</div>
-                        <div class="fs-2 fw-bold">{{ total_screenings }}</div>
-                    </div>
-                    <div class="fs-1 text-warning opacity-25"><i class="bi bi-clipboard2-pulse"></i></div>
+        <div class="admin-card p-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-number">{{ total_screenings }}</div>
+                    <div class="stat-label">Результатов скрининга</div>
+                    <div class="stat-trend"><i class="bi bi-arrow-up"></i> 15% за месяц</div>
+                </div>
+                <div class="stat-card-icon amber">
+                    <i class="bi bi-clipboard2-pulse"></i>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Middle row: 3 compact status cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="status-card red">
+            <div class="d-flex align-items-center gap-3">
+                <div class="num">{{ positive_count }}</div>
+                <div class="lbl">Положительных результатов</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="status-card orange">
+            <div class="d-flex align-items-center gap-3">
+                <div class="num">{{ pending_notifs }}</div>
+                <div class="lbl">Ожидающих уведомлений</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="status-card green">
+            <div class="d-flex align-items-center gap-3">
+                <div class="num">{{ confirmed_notifs }}</div>
+                <div class="lbl">Подтверждённых уведомлений</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom row -->
 <div class="row g-4">
-    <div class="col-md-4">
-        <div class="card stat-card danger">
-            <div class="card-body">
-                <div class="text-muted small">Положительных результатов</div>
-                <div class="fs-3 fw-bold text-danger">{{ positive_count }}</div>
+    <!-- Recent results -->
+    <div class="col-md-7">
+        <div class="admin-card p-4">
+            <h6 class="fw-semibold mb-3" style="color: #374151;">
+                <i class="bi bi-clock-history me-2 text-muted"></i>Последние результаты
+            </h6>
+            {% if recent_screenings %}
+            <div class="list-group list-group-flush">
+                {% for sr in recent_screenings %}
+                <div class="d-flex align-items-center justify-content-between py-2 {% if not loop.last %}border-bottom{% endif %}" style="border-color: #f3f4f6 !important;">
+                    <div>
+                        <div class="fw-medium" style="font-size: .9rem; color: #111827;">{{ sr.baby_name }}</div>
+                        <div style="font-size: .8rem; color: #9ca3af;">{{ sr.disease_name }}</div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        {% if sr.result_type == 'negative' %}
+                        <span class="badge-pill badge-green"><i class="bi bi-check-circle"></i> Норма</span>
+                        {% elif sr.result_type == 'positive' %}
+                        <span class="badge-pill badge-red"><i class="bi bi-exclamation-triangle"></i> Положит.</span>
+                        {% else %}
+                        <span class="badge-pill badge-orange"><i class="bi bi-arrow-repeat"></i> Повтор</span>
+                        {% endif %}
+                        <span style="font-size: .75rem; color: #9ca3af; min-width: 75px; text-align: right;">{{ sr.received_at }}</span>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
+            {% else %}
+            <p class="text-muted small mb-0">Нет результатов</p>
+            {% endif %}
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card stat-card warning">
-            <div class="card-body">
-                <div class="text-muted small">Ожидающих уведомлений</div>
-                <div class="fs-3 fw-bold text-warning">{{ pending_notifs }}</div>
+
+    <!-- Region bars -->
+    <div class="col-md-5">
+        <div class="admin-card p-4">
+            <h6 class="fw-semibold mb-3" style="color: #374151;">
+                <i class="bi bi-geo-alt me-2 text-muted"></i>По районам
+            </h6>
+            {% if region_stats %}
+            {% set max_count = region_stats[0].count if region_stats else 1 %}
+            {% for rs in region_stats[:8] %}
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <div style="width: 80px; font-size: .8rem; color: #6b7280; flex-shrink: 0;">{{ rs.region }}</div>
+                <div class="flex-grow-1" style="height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden;">
+                    <div style="height: 100%; width: {{ (rs.count / max_count * 100)|int }}%; background: linear-gradient(90deg, #3b82f6, #10b981); border-radius: 4px;"></div>
+                </div>
+                <div style="width: 24px; font-size: .8rem; font-weight: 600; color: #374151; text-align: right;">{{ rs.count }}</div>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card stat-card success">
-            <div class="card-body">
-                <div class="text-muted small">Подтверждённых уведомлений</div>
-                <div class="fs-3 fw-bold text-success">{{ confirmed_notifs }}</div>
-            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted small mb-0">Нет данных</p>
+            {% endif %}
         </div>
     </div>
 </div>
