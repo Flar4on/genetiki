@@ -447,6 +447,16 @@ def _get_portal_parent(request: Request) -> Optional[Parent]:
     return _find_parent_by_id(parent_id)
 
 
+AVATAR_COLORS = [
+    "#dbeafe", "#dcfce7", "#fef3c7", "#fce7f3",
+    "#e0e7ff", "#ccfbf1", "#fee2e2", "#f3e8ff",
+]
+
+
+def _avatar_color(name: str) -> str:
+    return AVATAR_COLORS[hash(name) % len(AVATAR_COLORS)]
+
+
 # ══════════════════════════════════════════════
 #  DEMO AUTO-LOGIN
 # ══════════════════════════════════════════════
@@ -505,6 +515,18 @@ async def admin_dashboard(request: Request):
     if not user:
         return RedirectResponse(url="/admin/login", status_code=302)
 
+    baby_names = {b.id: b.name for b in DB["babies"]}
+    sorted_screenings = sorted(DB["screenings"], key=lambda s: s.received_at or s.created_at, reverse=True)
+    recent_screenings = [{
+        "baby_name": baby_names.get(s.baby_id, "—"),
+        "disease_name": s.disease_name or "—",
+        "result_type": s.result_type.value,
+        "received_at": s.received_at.strftime("%d.%m.%Y") if s.received_at else "—",
+    } for s in sorted_screenings[:5]]
+
+    region_counter = Counter(p.region for p in DB["parents"] if p.region)
+    region_stats = [{"region": r, "count": c} for r, c in region_counter.most_common()]
+
     return _render(admin_tpl, request, "dashboard.html", {
         "user": user,
         "total_parents": len(DB["parents"]),
@@ -513,6 +535,8 @@ async def admin_dashboard(request: Request):
         "positive_count": sum(1 for s in DB["screenings"] if s.result_type == ResultType.positive),
         "pending_notifs": sum(1 for n in DB["notifications"] if n.status in (NotificationStatus.pending, NotificationStatus.sent)),
         "confirmed_notifs": sum(1 for n in DB["notifications"] if n.status == NotificationStatus.confirmed),
+        "recent_screenings": recent_screenings,
+        "region_stats": region_stats,
     })
 
 
@@ -525,6 +549,8 @@ async def admin_parents(request: Request):
     parents = [{
         "id": str(p.id),
         "full_name": p.full_name,
+        "initials": "".join(w[0] for w in p.full_name.split()[:2]) if p.full_name else "?",
+        "avatar_color": _avatar_color(p.full_name or ""),
         "phone": p.phone,
         "region": p.region,
         "registration_date": p.registration_date.strftime("%d.%m.%Y") if p.registration_date else "—",
@@ -549,7 +575,17 @@ async def admin_screening(request: Request):
     if not user:
         return RedirectResponse(url="/admin/login", status_code=302)
 
-    return _render(admin_tpl, request, "screening.html", {"user": user, "results": DB["screenings"]})
+    baby_names = {b.id: b.name for b in DB["babies"]}
+    results = [{
+        "baby_name": baby_names.get(s.baby_id, "—"),
+        "result_type": s.result_type,
+        "disease_code": s.disease_code,
+        "disease_name": s.disease_name,
+        "received_at": s.received_at,
+        "source": s.source,
+    } for s in sorted(DB["screenings"], key=lambda s: s.received_at or s.created_at, reverse=True)]
+
+    return _render(admin_tpl, request, "screening.html", {"user": user, "results": results})
 
 
 @app.get("/admin/notifications", response_class=HTMLResponse)
@@ -558,7 +594,18 @@ async def admin_notifications(request: Request):
     if not user:
         return RedirectResponse(url="/admin/login", status_code=302)
 
-    return _render(admin_tpl, request, "notifications.html", {"user": user, "notifications": DB["notifications"]})
+    parent_names = {p.id: p.full_name for p in DB["parents"]}
+    notifications = [{
+        "parent_name": parent_names.get(n.parent_id, "—"),
+        "status": n.status,
+        "message_text": n.message_text,
+        "retry_count": n.retry_count,
+        "sent_at": n.sent_at,
+        "confirmed_at": n.confirmed_at,
+        "created_at": n.created_at,
+    } for n in sorted(DB["notifications"], key=lambda n: n.created_at, reverse=True)]
+
+    return _render(admin_tpl, request, "notifications.html", {"user": user, "notifications": notifications})
 
 
 @app.get("/admin/analytics", response_class=HTMLResponse)
@@ -570,7 +617,25 @@ async def admin_analytics(request: Request):
     region_counter = Counter(p.region for p in DB["parents"] if p.region)
     region_stats = [{"region": r, "count": c} for r, c in region_counter.most_common()]
 
-    return _render(admin_tpl, request, "analytics.html", {"user": user, "region_stats": region_stats})
+    screening_stats = {
+        "negative": sum(1 for s in DB["screenings"] if s.result_type == ResultType.negative),
+        "positive": sum(1 for s in DB["screenings"] if s.result_type == ResultType.positive),
+        "repeat": sum(1 for s in DB["screenings"] if s.result_type == ResultType.repeat_needed),
+    }
+
+    notification_stats = {
+        "confirmed": sum(1 for n in DB["notifications"] if n.status == NotificationStatus.confirmed),
+        "sent": sum(1 for n in DB["notifications"] if n.status == NotificationStatus.sent),
+        "pending": sum(1 for n in DB["notifications"] if n.status == NotificationStatus.pending),
+        "escalated": sum(1 for n in DB["notifications"] if n.status == NotificationStatus.escalated),
+    }
+
+    return _render(admin_tpl, request, "analytics.html", {
+        "user": user,
+        "region_stats": region_stats,
+        "screening_stats": screening_stats,
+        "notification_stats": notification_stats,
+    })
 
 
 # ══════════════════════════════════════════════
