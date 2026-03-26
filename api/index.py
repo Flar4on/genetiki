@@ -537,7 +537,25 @@ async def admin_dashboard(request: Request):
         "confirmed_notifs": sum(1 for n in DB["notifications"] if n.status == NotificationStatus.confirmed),
         "recent_screenings": recent_screenings,
         "region_stats": region_stats,
+        "disease_stats": _disease_stats(),
     })
+
+
+def _disease_stats():
+    """Count screenings per disease, split by result type."""
+    diseases = {}
+    for s in DB["screenings"]:
+        name = s.disease_name or s.disease_code or "—"
+        if name not in diseases:
+            diseases[name] = {"name": name, "total": 0, "negative": 0, "positive": 0, "repeat": 0}
+        diseases[name]["total"] += 1
+        if s.result_type == ResultType.negative:
+            diseases[name]["negative"] += 1
+        elif s.result_type == ResultType.positive:
+            diseases[name]["positive"] += 1
+        else:
+            diseases[name]["repeat"] += 1
+    return sorted(diseases.values(), key=lambda d: d["total"], reverse=True)
 
 
 @app.get("/admin/parents", response_class=HTMLResponse)

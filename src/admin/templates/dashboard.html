@@ -140,4 +140,63 @@
         </div>
     </div>
 </div>
+
+<!-- Disease analytics -->
+<div class="admin-card p-4 mt-4">
+    <h6 class="fw-semibold mb-3" style="color: #374151;">
+        <i class="bi bi-virus me-2 text-muted"></i>Аналитика по заболеваниям
+    </h6>
+    {% if disease_stats %}
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Заболевание</th>
+                <th style="text-align: center;">Всего</th>
+                <th style="text-align: center;">Норма</th>
+                <th style="text-align: center;">Положит.</th>
+                <th style="text-align: center;">Повтор</th>
+                <th>Распределение</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in disease_stats %}
+            <tr>
+                <td class="fw-medium">{{ d.name }}</td>
+                <td style="text-align: center; font-weight: 600;">{{ d.total }}</td>
+                <td style="text-align: center;"><span class="badge-pill badge-green">{{ d.negative }}</span></td>
+                <td style="text-align: center;">
+                    {% if d.positive > 0 %}
+                    <span class="badge-pill badge-red">{{ d.positive }}</span>
+                    {% else %}
+                    <span style="color: #d1d5db;">—</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: center;">
+                    {% if d.repeat > 0 %}
+                    <span class="badge-pill badge-orange">{{ d.repeat }}</span>
+                    {% else %}
+                    <span style="color: #d1d5db;">—</span>
+                    {% endif %}
+                </td>
+                <td style="width: 200px;">
+                    <div class="d-flex" style="height: 8px; border-radius: 4px; overflow: hidden; background: #f3f4f6;">
+                        {% if d.negative > 0 %}
+                        <div style="width: {{ (d.negative / d.total * 100)|int }}%; background: #10b981;"></div>
+                        {% endif %}
+                        {% if d.positive > 0 %}
+                        <div style="width: {{ (d.positive / d.total * 100)|int }}%; background: #ef4444;"></div>
+                        {% endif %}
+                        {% if d.repeat > 0 %}
+                        <div style="width: {{ (d.repeat / d.total * 100)|int }}%; background: #f59e0b;"></div>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted small mb-0">Нет данных</p>
+    {% endif %}
+</div>
 {% endblock %}
