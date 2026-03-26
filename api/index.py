@@ -1,8 +1,8 @@
 """
-Vercel serverless entry point for РНС Якутия (demo mode).
+Vercel serverless entry point for НС Якутия (demo mode).
 
 All data is stored in-memory using dataclasses instead of SQLAlchemy.
-No database, Redis, or Telegram bot required.
+No database, Redis, or Max bot required.
 """
 
 import hashlib
@@ -360,7 +360,7 @@ seed_data()
 
 # ── FastAPI app ──
 
-app = FastAPI(title="РНС Якутия (Демо)")
+app = FastAPI(title="НС Якутия (Демо)")
 
 admin_tpl = Jinja2Templates(directory=os.path.join(BASE_DIR, "src", "admin", "templates"))
 portal_tpl = Jinja2Templates(directory=os.path.join(BASE_DIR, "src", "portal", "templates"))
