@@ -25,6 +25,7 @@
             align-items: center;
             gap: 8px;
             text-decoration: none;
+            flex-shrink: 0;
         }
         .portal-logo i {
             font-size: 1.3rem;
@@ -66,6 +67,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
         .user-avatar {
             width: 32px; height: 32px;
@@ -86,6 +88,17 @@
             transition: color .15s;
         }
         .logout-btn:hover { color: #ef4444; }
+
+        /* Portal nav hamburger */
+        .portal-nav-toggler {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #374151;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
 
         /* Cards */
         .portal-card {
@@ -169,17 +182,85 @@
             border-top: 1px solid #f3f4f6;
             margin-top: 2rem;
         }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .portal-nav-toggler {
+                display: inline-block;
+            }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                gap: 0;
+                margin-top: 0.75rem;
+                border-top: 1px solid #f3f4f6;
+                padding-top: 0.5rem;
+            }
+            .nav-links.show {
+                display: flex;
+            }
+            .nav-links a {
+                width: 100%;
+                padding: 10px 14px;
+                border-radius: 8px;
+            }
+            .user-info .user-name {
+                display: none;
+            }
+            .portal-nav .container {
+                flex-wrap: wrap;
+            }
+            .portal-nav .nav-row {
+                display: flex;
+                width: 100%;
+                align-items: center;
+                justify-content: space-between;
+            }
+            .portal-nav .nav-row-right {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
     <nav class="portal-nav">
-        <div class="container d-flex align-items-center justify-content-between">
-            <a class="portal-logo" href="/portal/">
-                <i class="bi bi-heart-pulse"></i>
-                <span>НС — Личный кабинет</span>
-            </a>
-            <div class="nav-links">
+        <div class="container">
+            <div class="nav-row d-flex align-items-center justify-content-between">
+                <a class="portal-logo" href="/portal/">
+                    <i class="bi bi-heart-pulse"></i>
+                    <span>НС — Личный кабинет</span>
+                </a>
+                <div class="nav-row-right d-flex align-items-center gap-2">
+                    <div class="nav-links d-none d-md-flex">
+                        <a href="/portal/" class="{% if active_page == 'dashboard' %}active{% endif %}">
+                            <i class="bi bi-house"></i>Главная
+                        </a>
+                        <a href="/portal/children" class="{% if active_page == 'children' %}active{% endif %}">
+                            <i class="bi bi-person-hearts"></i>Мои дети
+                        </a>
+                        <a href="/portal/notifications" class="{% if active_page == 'notifications' %}active{% endif %}">
+                            <i class="bi bi-bell"></i>Уведомления
+                        </a>
+                        <a href="/portal/info" class="{% if active_page == 'info' %}active{% endif %}">
+                            <i class="bi bi-info-circle"></i>О скрининге
+                        </a>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-avatar">{{ parent_name[0] if parent_name else 'П' }}</div>
+                        <span class="user-name">{{ parent_name }}</span>
+                        <a href="/portal/logout" class="logout-btn"><i class="bi bi-box-arrow-right"></i></a>
+                    </div>
+                    <button class="portal-nav-toggler d-md-none" onclick="document.getElementById('portalNavLinks').classList.toggle('show')" aria-label="Меню">
+                        <i class="bi bi-list"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Mobile collapsible nav links -->
+            <div class="nav-links d-md-none" id="portalNavLinks">
                 <a href="/portal/" class="{% if active_page == 'dashboard' %}active{% endif %}">
                     <i class="bi bi-house"></i>Главная
                 </a>
@@ -192,11 +273,6 @@
                 <a href="/portal/info" class="{% if active_page == 'info' %}active{% endif %}">
                     <i class="bi bi-info-circle"></i>О скрининге
                 </a>
-            </div>
-            <div class="user-info">
-                <div class="user-avatar">{{ parent_name[0] if parent_name else 'П' }}</div>
-                <span class="user-name">{{ parent_name }}</span>
-                <a href="/portal/logout" class="logout-btn"><i class="bi bi-box-arrow-right"></i></a>
             </div>
         </div>
     </nav>

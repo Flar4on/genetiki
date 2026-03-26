@@ -3,6 +3,46 @@
 
 {% block title %}Мои дети — НС{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* Children page: side-by-side layout stacking on mobile */
+    .baby-layout {
+        display: flex;
+        min-height: 0;
+    }
+    .baby-info-panel {
+        width: 320px;
+        padding: 1.75rem;
+        border-right: 1px solid #f3f4f6;
+        flex-shrink: 0;
+    }
+    .baby-results-panel {
+        flex: 1;
+        padding: 1.75rem;
+    }
+
+    @media (max-width: 768px) {
+        .baby-layout {
+            flex-direction: column;
+        }
+        .baby-info-panel {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid #f3f4f6;
+            padding: 1.25rem;
+        }
+        .baby-results-panel {
+            padding: 1.25rem;
+        }
+        .baby-results-panel .table-responsive {
+            margin: 0 -1.25rem;
+            padding: 0 1.25rem;
+            width: calc(100% + 2.5rem);
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-4">
     <h2 style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0;">
@@ -13,9 +53,9 @@
 {% if babies %}
 {% for baby in babies %}
 <div class="portal-card mb-4" style="overflow: hidden;">
-    <div class="d-flex" style="min-height: 0;">
+    <div class="baby-layout">
         <!-- Baby info -->
-        <div style="width: 320px; padding: 1.75rem; border-right: 1px solid #f3f4f6; flex-shrink: 0;">
+        <div class="baby-info-panel">
             <div class="d-flex align-items-center gap-2 mb-3">
                 {% if baby.name and baby.name[-1:] in ['а', 'я'] %}
                 <i class="bi bi-gender-female" style="color: #ec4899; font-size: 1.2rem;"></i>
@@ -45,11 +85,12 @@
         </div>
 
         <!-- Screening results -->
-        <div style="flex: 1; padding: 1.75rem;">
+        <div class="baby-results-panel">
             <div class="section-title mb-3">
                 <i class="bi bi-clipboard2-pulse"></i>Результаты скрининга
             </div>
             {% if baby.screening_results %}
+            <div class="table-responsive">
             <table class="portal-table">
                 <thead>
                     <tr>
@@ -61,7 +102,7 @@
                 <tbody>
                     {% for sr in baby.screening_results %}
                     <tr>
-                        <td style="font-size: .85rem; color: #6b7280;">{{ sr.received_at.strftime('%d.%m.%Y') if sr.received_at else '—' }}</td>
+                        <td style="font-size: .85rem; color: #6b7280; white-space: nowrap;">{{ sr.received_at.strftime('%d.%m.%Y') if sr.received_at else '—' }}</td>
                         <td>
                             {% if sr.result_type.value == 'positive' %}
                             <span class="badge-pill badge-red"><i class="bi bi-exclamation-triangle"></i> Положительный</span>
@@ -76,6 +117,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            </div>
             {% else %}
             <div class="text-center py-4">
                 <i class="bi bi-clock" style="font-size: 1.5rem; color: #d1d5db;"></i>

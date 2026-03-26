@@ -15,6 +15,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
         }
         .login-card {
             max-width: 420px;
@@ -78,6 +79,16 @@
             transition: color .15s;
         }
         .back-link:hover { color: #3b82f6; }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            .login-title {
+                font-size: 1.15rem;
+            }
+        }
     </style>
 </head>
 <body>

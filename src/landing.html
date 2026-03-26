@@ -39,6 +39,21 @@
             background-clip: text;
         }
 
+        /* Header hamburger */
+        .header-toggler {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #374151;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
         /* Hero */
         .hero {
             padding: 60px 0 40px;
@@ -245,12 +260,42 @@
             margin-top: 2rem;
         }
 
+        /* Mobile responsive */
         @media (max-width: 768px) {
+            .header-toggler {
+                display: inline-block;
+            }
+            .header-buttons {
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                gap: 0.5rem;
+                margin-top: 0.75rem;
+            }
+            .header-buttons.show {
+                display: flex;
+            }
+            .header-buttons a {
+                text-align: center;
+            }
+            .landing-header .container {
+                flex-wrap: wrap;
+            }
             .hero h1 { font-size: 1.8rem; }
             .hero { padding: 40px 0 30px; }
-            .stat-item { padding: 12px 20px; }
+            .hero .lead { font-size: .95rem; }
+            .stat-item { padding: 12px 20px; flex: 1 1 calc(50% - 0.5rem); min-width: 120px; }
             .stat-number { font-size: 1.3rem; }
             .card-entry .card-body { padding: 1.5rem; }
+            .col-md-5 { width: 100%; }
+            .features-row { gap: 8px; }
+            .feature-pill { padding: 8px 14px; font-size: .8rem; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.5rem; }
+            .hero-badge { font-size: .7rem; padding: 5px 12px; }
+            .stat-item { flex: 1 1 100%; }
         }
     </style>
 </head>
@@ -262,7 +307,10 @@
                 <i class="bi bi-heart-pulse"></i>
                 <span>НС Якутия</span>
             </a>
-            <div class="d-flex gap-2">
+            <button class="header-toggler" onclick="document.getElementById('headerButtons').classList.toggle('show')" aria-label="Меню">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="header-buttons" id="headerButtons">
                 <a href="/demo/admin" class="btn btn-entry blue" style="padding: 6px 16px; font-size: .8rem;">Панель управления</a>
                 <a href="/demo/portal" class="btn btn-entry green" style="padding: 6px 16px; font-size: .8rem;">Личный кабинет</a>
             </div>

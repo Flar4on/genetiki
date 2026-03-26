@@ -10,7 +10,7 @@
 
 <!-- Top row: 3 stat cards -->
 <div class="row g-4 mb-4">
-    <div class="col-md-4">
+    <div class="col-12 col-md-4">
         <div class="admin-card p-4">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
@@ -24,7 +24,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-12 col-md-4">
         <div class="admin-card p-4">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
@@ -38,7 +38,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-12 col-md-4">
         <div class="admin-card p-4">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
@@ -56,7 +56,7 @@
 
 <!-- Middle row: 3 compact status cards -->
 <div class="row g-4 mb-4">
-    <div class="col-md-4">
+    <div class="col-12 col-md-4">
         <div class="status-card red">
             <div class="d-flex align-items-center gap-3">
                 <div class="num">{{ positive_count }}</div>
@@ -64,7 +64,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-12 col-md-4">
         <div class="status-card orange">
             <div class="d-flex align-items-center gap-3">
                 <div class="num">{{ pending_notifs }}</div>
@@ -72,7 +72,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-12 col-md-4">
         <div class="status-card green">
             <div class="d-flex align-items-center gap-3">
                 <div class="num">{{ confirmed_notifs }}</div>
@@ -85,7 +85,7 @@
 <!-- Bottom row -->
 <div class="row g-4">
     <!-- Recent results -->
-    <div class="col-md-7">
+    <div class="col-12 col-md-7">
         <div class="admin-card p-4">
             <h6 class="fw-semibold mb-3" style="color: #374151;">
                 <i class="bi bi-clock-history me-2 text-muted"></i>Последние результаты
@@ -98,7 +98,7 @@
                         <div class="fw-medium" style="font-size: .9rem; color: #111827;">{{ sr.baby_name }}</div>
                         <div style="font-size: .8rem; color: #9ca3af;">{{ sr.disease_name }}</div>
                     </div>
-                    <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2 gap-md-3 flex-shrink-0">
                         {% if sr.result_type == 'negative' %}
                         <span class="badge-pill badge-green"><i class="bi bi-check-circle"></i> Норма</span>
                         {% elif sr.result_type == 'positive' %}
@@ -106,7 +106,7 @@
                         {% else %}
                         <span class="badge-pill badge-orange"><i class="bi bi-arrow-repeat"></i> Повтор</span>
                         {% endif %}
-                        <span style="font-size: .75rem; color: #9ca3af; min-width: 75px; text-align: right;">{{ sr.received_at }}</span>
+                        <span class="d-none d-sm-inline" style="font-size: .75rem; color: #9ca3af; min-width: 75px; text-align: right;">{{ sr.received_at }}</span>
                     </div>
                 </div>
                 {% endfor %}
@@ -118,7 +118,7 @@
     </div>
 
     <!-- Region bars -->
-    <div class="col-md-5">
+    <div class="col-12 col-md-5">
         <div class="admin-card p-4">
             <h6 class="fw-semibold mb-3" style="color: #374151;">
                 <i class="bi bi-geo-alt me-2 text-muted"></i>По районам
@@ -147,6 +147,7 @@
         <i class="bi bi-virus me-2 text-muted"></i>Аналитика по заболеваниям
     </h6>
     {% if disease_stats %}
+    <div class="table-responsive">
     <table class="admin-table">
         <thead>
             <tr>
@@ -178,7 +179,7 @@
                     <span style="color: #d1d5db;">—</span>
                     {% endif %}
                 </td>
-                <td style="width: 200px;">
+                <td style="min-width: 150px;">
                     <div class="d-flex" style="height: 8px; border-radius: 4px; overflow: hidden; background: #f3f4f6;">
                         {% if d.negative > 0 %}
                         <div style="width: {{ (d.negative / d.total * 100)|int }}%; background: #10b981;"></div>
@@ -195,6 +196,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
     {% else %}
     <p class="text-muted small mb-0">Нет данных</p>
     {% endif %}
