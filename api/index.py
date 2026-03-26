@@ -304,7 +304,7 @@ def seed_data():
                         id=_uuid(f"notif-{notif_counter}"),
                         parent_id=parent.id,
                         screening_result_id=sr.id,
-                        message_text=f"По результатам скрининга для {baby.name} требуется повторный забор крови ({dname}). Обратитесь в поликлинику.",
+                        message_text=f"По результатам скрининга для {baby.name} требуется повторный забор крови ({dname}). Обратитесь в лабораторию МГЦ, 3 этаж.",
                         status=status,
                         sent_at=base_dt + timedelta(hours=2),
                         confirmed_at=(base_dt + timedelta(days=1)) if status == NotificationStatus.confirmed else None,
