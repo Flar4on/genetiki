@@ -448,6 +448,30 @@ def _get_portal_parent(request: Request) -> Optional[Parent]:
 
 
 # ══════════════════════════════════════════════
+#  DEMO AUTO-LOGIN
+# ══════════════════════════════════════════════
+
+
+@app.get("/demo/admin")
+async def demo_admin():
+    """Auto-login as admin and redirect to dashboard."""
+    token = create_access_token({"sub": ADMIN_EMAIL, "role": "admin"})
+    response = RedirectResponse(url="/admin/", status_code=302)
+    response.set_cookie("access_token", token, httponly=True, max_age=86400)
+    return response
+
+
+@app.get("/demo/portal")
+async def demo_portal():
+    """Auto-login as first parent and redirect to portal."""
+    parent = DB["parents"][0]
+    token = create_access_token({"parent_id": str(parent.id), "type": "portal"})
+    response = RedirectResponse(url="/portal/", status_code=302)
+    response.set_cookie("portal_token", token, httponly=True, max_age=86400)
+    return response
+
+
+# ══════════════════════════════════════════════
 #  ADMIN ROUTES
 # ══════════════════════════════════════════════
 
